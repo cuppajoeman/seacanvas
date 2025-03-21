@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SeaCanvas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Lora', serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0f7f7;
+            color: #004d4d;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #88b0c2;
+            color: white;
+            font-family: 'Lora', serif;
+        }
+        .nav-buttons button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            margin-left: 15px;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+        }
+        .nav-buttons button:hover {
+            text-decoration: underline;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+            font-family: 'Lora', serif;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .gallery-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Lora', serif;
+        }
+        .gallery-item img {
+            width: 100%;
+            border-radius: 5px;
+            transition: transform 0.3s;
+        }
+        .gallery-item img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Lightbox Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            cursor: grab;
+            user-select: none;
+        }
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: 'Lora', serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="brand">SeaCanvas</div>
+        <div class="nav-buttons">
+            <button onclick="showPage('about')">About</button>
+            <button onclick="showPage('gallery')">Gallery</button>
+            <button onclick="showPage('contact')">Contact</button>
+        </div>
+    </div>
+
+    <div id="about" class="content">
+        <h2>About the Artist</h2>
+        <p>I live on the Bay of Fundy, Nova Scotia. The tides here are the highest in the world, and their arrival and receding create ethereal seascapes on vast palettes of clay. I never tire of the changing views where sea meets earth and sky, exquisitely beautiful no matter the time of day or year.</p>
+    </div>
+
+    <div id="gallery" class="content" style="display: none;">
+        <h2>Gallery</h2>
+        <div class="gallery" id="gallery-container"></div>
+    </div>
+
+    <div id="contact" class="content" style="display: none;">
+        <h2>Contact</h2>
+        <p>To purchase art, please send an email to: <strong>contact@seacanvas.com</strong></p>
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div id="image-modal" class="modal">
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+        <img id="modal-image" class="modal-content" src="" alt="">
+    </div>
+
+    <script>
+        function showPage(page) {
+            document.getElementById('about').style.display = 'none';
+            document.getElementById('gallery').style.display = 'none';
+            document.getElementById('contact').style.display = 'none';
+            document.getElementById(page).style.display = 'block';
+        }
+
+        function loadGallery() {
+            const galleryContainer = document.getElementById('gallery-container');
+            const placeholderImage = 'https://placehold.co/600x400';
+            const artworks = [
+                { title: 'Artwork 1', img: 'icy.jpg' },
+                { title: 'Artwork 2', img: placeholderImage },
+                { title: 'Artwork 3', img: placeholderImage },
+                { title: 'Artwork 4', img: placeholderImage }
+            ];
+            artworks.forEach(art => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `<img src="${art.img}" alt="${art.title}" onclick="openModal(this.src)"> <p>${art.title}</p>`;
+                galleryContainer.appendChild(item);
+            });
+        }
+
+        function openModal(src) {
+            const modal = document.getElementById('image-modal');
+            const modalImage = document.getElementById('modal-image');
+            modal.style.display = 'flex';
+            modalImage.src = src;
+            modalImage.style.transform = "scale(1) translate(0, 0)";
+            modalImage.dataset.scale = "1";
+            modalImage.dataset.translateX = "0";
+            modalImage.dataset.translateY = "0";
+        }
+
+        function closeModal() {
+            document.getElementById('image-modal').style.display = 'none';
+        }
+
+        function zoomImage(event) {
+            const modalImage = document.getElementById('modal-image');
+            let scale = parseFloat(modalImage.dataset.scale);
+            const delta = event.deltaY > 0 ? -0.1 : 0.1;
+
+            scale = Math.min(Math.max(1, scale + delta), 5);
+            modalImage.dataset.scale = scale;
+            modalImage.style.transform = `scale(${scale})`;
+        }
+
+        function startPan(event) {
+            event.preventDefault();
+            const modalImage = document.getElementById('modal-image');
+            modalImage.dataset.startX = event.clientX;
+            modalImage.dataset.startY = event.clientY;
+            modalImage.dataset.isPanning = "true";
+        }
+
+        function panImage(event) {
+            const modalImage = document.getElementById('modal-image');
+            if (modalImage.dataset.isPanning !== "true") return;
+
+            const startX = parseFloat(modalImage.dataset.startX);
+            const startY = parseFloat(modalImage.dataset.startY);
+            const translateX = parseFloat(modalImage.dataset.translateX);
+            const translateY = parseFloat(modalImage.dataset.translateY);
+
+            const deltaX = event.clientX - startX;
+            const deltaY = event.clientY - startY;
+
+            modalImage.dataset.translateX = translateX + deltaX;
+            modalImage.dataset.translateY = translateY + deltaY;
+            modalImage.style.transform = `scale(${modalImage.dataset.scale}) translate(${modalImage.dataset.translateX}px, ${modalImage.dataset.translateY}px)`;
+
+            modalImage.dataset.startX = event.clientX;
+            modalImage.dataset.startY = event.clientY;
+        }
+
+        function endPan() {
+            const modalImage = document.getElementById('modal-image');
+            modalImage.dataset.isPanning = "false";
+        }
+
+        window.onload = loadGallery;
+        document.getElementById('modal-image').addEventListener("wheel", zoomImage);
+        document.getElementById('modal-image').addEventListener("mousedown", startPan);
+        document.addEventListener("mousemove", panImage);
+        document.addEventListener("mouseup", endPan);
+    </script>
+</body>
+</html>
