@@ -135,11 +135,20 @@
         function loadGallery() {
             const galleryContainer = document.getElementById('gallery-container');
             const placeholderImage = 'https://placehold.co/600x400';
+
             const artworks = [
-                { title: 'Artwork 1', img: 'icy.jpg' },
-                { title: 'Artwork 2', img: placeholderImage },
-                { title: 'Artwork 3', img: placeholderImage },
-                { title: 'Artwork 4', img: placeholderImage }
+                { title: 'Icy', img: 'icy.jpg' },
+                { title: 'Avon Port Beach', img: 'avon_port_beach.webp' },
+                { title: 'Early Spring Tide', img: 'early_spring_tide.webp'},
+                { title: 'Haze Over Scotts Bay', img: 'haze_over_scotts_bay.webp'},
+                { title: 'Low Tide Sunrise', img: 'low_tide_sunrise.jpg'},
+                { title: 'Minas Basin High Tide', img: 'minas_basin_high_tide.jpg'},
+                { title: 'Mini Minas Morning Minas Maxi Minas', img: 'mini_minas_morning_minas_maxi_minas.jpg'},
+                { title: 'On The Wolfville Dyke November', img: 'on_the_wolfville_dyke_november.jpg'},
+                { title: 'Quiet Day On The Shore', img: 'quiet_day_on_the_shore.webp'},
+                { title: 'Rainy Morning Kingsport', img: 'rainy_morning_kingsport.jpg'},
+                { title: 'Request your own', img: placeholderImage },
+                // { title: 'Artwork 4', img: placeholderImage }
             ];
             artworks.forEach(art => {
                 const item = document.createElement('div');
