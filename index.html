@@ -1,258 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeaCanvas</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Lora:wght@300;400;600&display=swap');
-        body {
-            font-family: 'Lora', serif;
-            margin: 0;
-            padding: 0;
-            background-color: #e0f7f7;
-            color: #004d4d;
-        }
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: #88b0c2;
-            color: white;
-            font-family: 'Lora', serif;
-        }
-        .nav-buttons button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 16px;
-            margin-left: 15px;
-            cursor: pointer;
-            font-family: 'Lora', serif;
-        }
-        .nav-buttons button:hover {
-            text-decoration: underline;
-        }
-        .content {
-            padding: 20px;
-            text-align: center;
-            font-family: 'Lora', serif;
-        }
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            padding: 20px;
-        }
-        .gallery-item {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Lora', serif;
-        }
-        .gallery-item img {
-            width: 100%;
-            border-radius: 5px;
-            transition: transform 0.3s;
-        }
-        .gallery-item img:hover {
-            transform: scale(1.05);
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SeaCanvas</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lora:wght@300;400;600&display=swap');
 
-        /* Lightbox Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            position: relative;
-            max-width: 90%;
-            max-height: 90%;
-            cursor: grab;
-            user-select: none;
-        }
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 25px;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-            background: none;
-            border: none;
-            font-family: 'Lora', serif;
-        }
-    </style>
+    body {
+      font-family: 'Lora', serif;
+      margin: 0;
+      background-color: #e0f7f7;
+      color: #004d4d;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background-color: #88b0c2;
+      color: white;
+      position: relative;
+      z-index: 10;
+    }
+
+    .nav-buttons button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      margin-left: 15px;
+      cursor: pointer;
+    }
+
+    .nav-buttons button:hover {
+      text-decoration: underline;
+    }
+
+    /* Slideshow */
+    .slideshow-container {
+      position: relative;
+      width: 100%;
+      height: 60vh;
+      overflow: hidden;
+      background-color: #d0eef0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .slide {
+      position: absolute;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      background-color: #d0eef0;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out;
+    }
+
+    .slide.active {
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .slideshow-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      font-size: 32px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      user-select: none;
+      z-index: 2;
+    }
+
+    .slideshow-btn:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .prev-slide {
+      left: 20px;
+    }
+
+    .next-slide {
+      right: 20px;
+    }
+
+    /* Utility Buttons */
+    .utility-buttons {
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 3;
+    }
+
+    .utility-btn {
+      background: rgba(0, 0, 0, 0.4);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .utility-btn:hover {
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    /* Volume Slider */
+    .volume-slider {
+      appearance: none;
+      width: 80px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 2px;
+      outline: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .volume-slider.show {
+      opacity: 1;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+
+    .content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .gallery-item {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      border-radius: 5px;
+      transition: transform 0.3s;
+    }
+
+    .gallery-item img:hover {
+      transform: scale(1.05);
+    }
+
+    /* Lightbox */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      font-size: 30px;
+      color: white;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="brand">SeaCanvas</div>
-        <div class="nav-buttons">
-            <button onclick="showPage('about')">About</button>
-            <button onclick="showPage('gallery')">Gallery</button>
-            <button onclick="showPage('contact')">Contact</button>
-        </div>
+  <div class="navbar">
+    <div class="brand">SeaCanvas</div>
+    <div class="nav-buttons">
+      <button onclick="showPage('about')">About</button>
+      <button onclick="showPage('gallery')">Gallery</button>
+      <button onclick="showPage('contact')">Contact</button>
+    </div>
+  </div>
+
+  <div id="about" class="content">
+    <h2>About</h2>
+    <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes.</p>
+    <p>I never tire of the changing colors and designs where the sea covers and uncovers vast palettes of clay.</p>
+    <p>Exquisitely beautiful no matter the day or season.</p>
+    <img src="minas_basin_high_tide.webp" style="width: 75%; height: auto;" />
+    <p>Incoming Tide - Oil on Canvas</p>
+  </div>
+
+  <div id="gallery" class="content" style="display: none;">
+    <h2>Slideshow</h2>
+    <div class="slideshow-container" id="slideshow-container">
+      <button class="slideshow-btn prev-slide" onclick="prevSlide()">&#10094;</button>
+      <button class="slideshow-btn next-slide" onclick="nextSlide()">&#10095;</button>
+      <div class="utility-buttons">
+        <button class="utility-btn" id="music-btn" onclick="toggleMusic()">🎵</button>
+        <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.5" />
+        <button class="utility-btn" onclick="toggleFullscreen()">⛶</button>
+      </div>
     </div>
 
-    <div id="about" class="content">
-        <h2>About</h2>
-            <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes. </p>
-            <p>I never tire of the changing colors and designs where the sea covers and uncovers vast palettes of clay.</p>
-            <p>Exquisitely beautiful no matter the day or season.</p>
-            <img src="minas_basin_high_tide.webp" style="width: 75%; height: auto;">
-            <p>Incoming Tide - Oil on Canvas</p>
-    </div>
+    <h2>Gallery</h2>
+    <div class="gallery" id="gallery-container"></div>
+  </div>
 
-    <div id="gallery" class="content" style="display: none;">
-        <h2>Gallery</h2>
-        <div class="gallery" id="gallery-container"></div>
-    </div>
+  <div id="contact" class="content" style="display: none;">
+    <h2>Contact</h2>
+    <p>For more information, to purchase art or have your own sea canvas created, send an email to
+      <strong>seacanvasns@gmail.com</strong></p>
+    <p>Paintings are oil on canvas and depending on size, range in price from 250$ to 1250$ CAD</p>
+  </div>
 
-    <div id="contact" class="content" style="display: none;">
-        <h2>Contact</h2>
-        <p>To purchase art, please send an email to: <strong>seacanvasns@gmail.com</strong></p>
-    </div>
+  <!-- Lightbox -->
+  <div id="image-modal" class="modal">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <img id="modal-image" class="modal-content" src="" alt="">
+  </div>
 
-    <!-- Lightbox Modal -->
-    <div id="image-modal" class="modal">
-        <button class="close-btn" onclick="closeModal()">&times;</button>
-        <img id="modal-image" class="modal-content" src="" alt="">
-    </div>
+  <audio id="bg-music" src="Sonata No. 1 In F Major, Op. 1 III. Adagio - London Baroque.mp3" loop></audio>
 
-    <script>
-        function showPage(page) {
-            document.getElementById('about').style.display = 'none';
-            document.getElementById('gallery').style.display = 'none';
-            document.getElementById('contact').style.display = 'none';
-            document.getElementById(page).style.display = 'block';
+  <script>
+    const filenames = [
+      'pale_blue_morning.webp',
+      'blue_waterfall.webp',
+      'pale_blue_afternoon.webp',
+      'incoming_tide_grand_pre.webp',
+      'minas_basin_high_tide.webp',
+      'quiet_day_on_the_shore.webp',
+      'low_tide_evangeline.webp',
+      'november_storm_gathering_wolfville.webp',
+      'breakdown_on_the_dikes.webp',
+      'quiet_day.webp',
+        //TODO
+      'morning_on_wolfville_dike.webp',
+      'avon_port_beach.webp',
+      'rainy_morning_kingsport.webp',
+      'icy.jpg',
+      'haze_over_scotts_bay.webp',
+      'low_tide_sunrise.jpg',
+      'wolfville_wharf_in_winter.jpg',
+
+      // 'avonport_beach.webp',
+      // 'on_the_wolfville_dyke_november.jpg',
+      // 'mini_minas_morning_minas_maxi_minas.jpg',
+    ];
+
+    const bgMusic = document.getElementById('bg-music');
+    const musicBtn = document.getElementById('music-btn');
+    const volumeSlider = document.getElementById('volume-slider');
+    let musicPlaying = false;
+
+    function showPage(page) {
+      ['about', 'gallery', 'contact'].forEach(p => {
+        document.getElementById(p).style.display = p === page ? 'block' : 'none';
+      });
+    }
+
+    function filenameToTitle(filename) {
+      return filename.replace(/\.[^/.]+$/, '')
+                     .replace(/_/g, ' ')
+                     .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function loadGallery() {
+      const galleryContainer = document.getElementById('gallery-container');
+      const slideshow = document.getElementById('slideshow-container');
+
+      filenames.forEach((img, i) => {
+        const slide = document.createElement('img');
+        slide.src = img;
+        slide.alt = filenameToTitle(img);
+        slide.className = 'slide';
+        if (i === 0) slide.classList.add('active');
+        slideshow.appendChild(slide);
+
+        const card = document.createElement('div');
+        card.className = 'gallery-item';
+        card.innerHTML = `
+          <img src="${img}" alt="${filenameToTitle(img)}" onclick="openModal(this.src)">
+          <p>${filenameToTitle(img)}</p>
+        `;
+        galleryContainer.appendChild(card);
+      });
+    }
+
+    let currentSlide = 0;
+    let slideTimer = null;
+    const SLIDE_INTERVAL = 6000;
+
+    function showSlide(index) {
+      const slides = document.querySelectorAll('.slide');
+      if (!slides.length) return;
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (index + slides.length) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }
+
+    function nextSlide() {
+      showSlide(currentSlide + 1);
+      resetSlideTimer();
+    }
+
+    function prevSlide() {
+      showSlide(currentSlide - 1);
+      resetSlideTimer();
+    }
+
+    function resetSlideTimer() {
+      clearInterval(slideTimer);
+      slideTimer = setInterval(() => {
+        if (document.getElementById('gallery').style.display !== 'none') {
+          showSlide(currentSlide + 1);
         }
+      }, SLIDE_INTERVAL);
+    }
 
-        function loadGallery() {
-            const galleryContainer = document.getElementById('gallery-container');
-            const placeholderImage = 'https://placehold.co/600x400';
+    function toggleFullscreen() {
+      const container = document.getElementById('slideshow-container');
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(console.warn);
+      } else {
+        document.exitFullscreen();
+      }
+    }
 
-            
-            const filenames = [
-                'pale_blue_morning.webp',
-                'pale_blue_afternoon.webp',
-                'blue_waterfall.webp',
-                'minas_basin_high_tide.webp',
-                'low_tide_sunrise.jpg',
-                'incoming_tide_grand_pre.webp',
-                // 'minas_basin_high_tide.jpg',
-                'avon_port_beach.webp',
-                'quiet_day_on_the_shore.webp',
-                'wolfville_wharf_in_winter.jpg',
-                'low_tide_evangeline.webp',
-                'november_storm_gathering_wolfville.webp',
-                'breakdown_on_the_dikes.webp',
-                'rainy_morning_kingsport.webp',
-                'quiet_day.webp',
-                'morning_on_wolfville_dike.webp',
-                'avonport_beach.webp',
-                'on_the_wolfville_dyke_november.jpg',
-                'mini_minas_morning_minas_maxi_minas.jpg',
-                'icy.jpg',
-                'haze_over_scotts_bay.webp',
-                // placeholderImage // placeholder or custom one
-            ];
+    function toggleMusic() {
+      if (musicPlaying) {
+        bgMusic.pause();
+        musicBtn.textContent = '🔇';
+        volumeSlider.classList.remove('show');
+      } else {
+        bgMusic.play();
+        musicBtn.textContent = '🎵';
+        volumeSlider.classList.add('show');
+      }
+      musicPlaying = !musicPlaying;
+    }
 
-            function filenameToTitle(filename) {
-                return filename
-                    .replace(/\.[^/.]+$/, '') // remove extension
-                    .replace(/_/g, ' ')       // replace underscores with spaces
-                    .replace(/\b\w/g, c => c.toUpperCase()); // capitalize each word
-            }
+    volumeSlider.addEventListener('input', () => {
+      bgMusic.volume = parseFloat(volumeSlider.value);
+    });
 
-            const artworks = filenames.map(img => ({
-                title: filenameToTitle(img),
-                img
-            }));
+    function openModal(src) {
+      const modal = document.getElementById('image-modal');
+      const modalImage = document.getElementById('modal-image');
+      modal.style.display = 'flex';
+      modalImage.src = src;
+    }
 
-            artworks.forEach(art => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.innerHTML = `
-                    <img src="${art.img}" alt="${art.title}" onclick="openModal(this.src)">
-                    <p>${art.title}</p>
-                `;
-                galleryContainer.appendChild(item);
-            });
+    function closeModal() {
+      document.getElementById('image-modal').style.display = 'none';
+    }
 
-        }
-
-        function openModal(src) {
-            const modal = document.getElementById('image-modal');
-            const modalImage = document.getElementById('modal-image');
-            modal.style.display = 'flex';
-            modalImage.src = src;
-            modalImage.style.transform = "scale(1) translate(0, 0)";
-            modalImage.dataset.scale = "1";
-            modalImage.dataset.translateX = "0";
-            modalImage.dataset.translateY = "0";
-        }
-
-        function closeModal() {
-            document.getElementById('image-modal').style.display = 'none';
-        }
-
-        function zoomImage(event) {
-            const modalImage = document.getElementById('modal-image');
-            let scale = parseFloat(modalImage.dataset.scale);
-            const delta = event.deltaY > 0 ? -0.1 : 0.1;
-
-            scale = Math.min(Math.max(1, scale + delta), 5);
-            modalImage.dataset.scale = scale;
-            modalImage.style.transform = `scale(${scale})`;
-        }
-
-        function startPan(event) {
-            event.preventDefault();
-            const modalImage = document.getElementById('modal-image');
-            modalImage.dataset.startX = event.clientX;
-            modalImage.dataset.startY = event.clientY;
-            modalImage.dataset.isPanning = "true";
-        }
-
-        function panImage(event) {
-            const modalImage = document.getElementById('modal-image');
-            if (modalImage.dataset.isPanning !== "true") return;
-
-            const startX = parseFloat(modalImage.dataset.startX);
-            const startY = parseFloat(modalImage.dataset.startY);
-            const translateX = parseFloat(modalImage.dataset.translateX);
-            const translateY = parseFloat(modalImage.dataset.translateY);
-
-            const deltaX = event.clientX - startX;
-            const deltaY = event.clientY - startY;
-
-            modalImage.dataset.translateX = translateX + deltaX;
-            modalImage.dataset.translateY = translateY + deltaY;
-            modalImage.style.transform = `scale(${modalImage.dataset.scale}) translate(${modalImage.dataset.translateX}px, ${modalImage.dataset.translateY}px)`;
-
-            modalImage.dataset.startX = event.clientX;
-            modalImage.dataset.startY = event.clientY;
-        }
-
-        function endPan() {
-            const modalImage = document.getElementById('modal-image');
-            modalImage.dataset.isPanning = "false";
-        }
-
-        window.onload = loadGallery;
-        document.getElementById('modal-image').addEventListener("wheel", zoomImage);
-        document.getElementById('modal-image').addEventListener("mousedown", startPan);
-        document.addEventListener("mousemove", panImage);
-        document.addEventListener("mouseup", endPan);
-    </script>
+    window.onload = function() {
+      loadGallery();
+      resetSlideTimer();
+      bgMusic.volume = parseFloat(volumeSlider.value);
+    };
+  </script>
 </body>
 </html>
