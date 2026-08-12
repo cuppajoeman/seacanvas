@@ -217,8 +217,7 @@
 
   <div id="about" class="content">
     <h2>About</h2>
-    <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes.</p>
-    <p>I never tire of the changing colors and designs where the sea covers and uncovers vast palettes of clay.</p>
+    <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes. I never tire of their changing colors and abstract design as the sea covers and uncovers vast palettes of clay.</p>
     <p>Exquisitely beautiful no matter the day or season.</p>
     <img src="minas_basin_high_tide.webp" style="width: 75%; height: auto;" />
     <p>Incoming Tide - Oil on Canvas</p>
@@ -243,7 +242,7 @@
   <div id="contact" class="content" style="display: none;">
     <h2>Contact</h2>
     <p>For more information, to purchase art or have your own sea canvas created, send an email to
-      <strong>seacanvasns@gmail.com</strong></p>
+      <strong>cassidyb@ns.sympatico.ca</strong></p>
     <p>Paintings are oil on canvas and depending on size, range in price from 250$ to 1250$ CAD</p>
   </div>
 
@@ -275,14 +274,14 @@
       'low_tide_sunrise.jpg',
       'wolfville_wharf_in_winter.jpg',
       'minas_basin_high_tide.jpg',
-      'rename1.jpg',
-      'rename2.jpg',
-      'rename3.jpg',
-      'rename4.jpg',
-      'rename5.jpg',
-      'rename6.jpg',
-      'rename7.jpg',
-      'rename8.jpg',
+      'mudflats_wolfville_harbour.jpg',
+      'basin_over_mudflats_wolfville_harbour.jpg',
+      'three_quarter_tide_wolfville.jpg',
+      'wind_on_basin_wolfville.jpg',
+      'incoming_tide_wolfville.jpg',
+      'high_tide_wolfville_dyke.jpg',
+      'halfway_tide_wolfville_dyke.jpg',
+      'outgoing_tide_wolfville_dyke.jpg',
 
       // Excluded from gallery:
       // 'avon_port_beach.webp',
@@ -296,6 +295,17 @@
     const volumeSlider = document.getElementById('volume-slider');
     let musicPlaying = false;
 
+    const paintingTitles = {
+      'mudflats_wolfville_harbour.jpg': 'Mudflats, Wolfville Harbour',
+      'basin_over_mudflats_wolfville_harbour.jpg': 'Basin Over Mudflats, Wolfville Harbour',
+      'three_quarter_tide_wolfville.jpg': '¾ Tide, Wolfville',
+      'wind_on_basin_wolfville.jpg': 'Wind on Basin, Wolfville',
+      'incoming_tide_wolfville.jpg': 'Incoming Tide, Wolfville',
+      'high_tide_wolfville_dyke.jpg': 'High Tide, Wolfville Dyke',
+      'halfway_tide_wolfville_dyke.jpg': 'Halfway Tide, Wolfville Dyke',
+      'outgoing_tide_wolfville_dyke.jpg': 'Outgoing Tide, Wolfville Dyke',
+    };
+
     function showPage(page) {
       ['about', 'gallery', 'contact'].forEach(p => {
         document.getElementById(p).style.display = p === page ? 'block' : 'none';
@@ -303,6 +313,8 @@
     }
 
     function filenameToTitle(filename) {
+      if (paintingTitles[filename]) return paintingTitles[filename];
+
       return filename.replace(/\.[^/.]+$/, '')
                      .replace(/_/g, ' ')
                      .replace(/\b\w/g, c => c.toUpperCase());
