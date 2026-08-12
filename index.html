@@ -38,6 +38,54 @@
       text-decoration: underline;
     }
 
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 30px;
+      line-height: 1;
+      padding: 4px 8px;
+    }
+
+    @media (max-width: 600px) {
+      .navbar {
+        padding: 14px 18px;
+      }
+
+      .brand {
+        font-size: 28px;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .nav-buttons {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #88b0c2;
+        box-shadow: 0 8px 12px rgba(0, 77, 77, 0.18);
+        padding: 8px 18px 16px;
+        text-align: right;
+      }
+
+      .nav-buttons.open {
+        display: block;
+      }
+
+      .nav-buttons button {
+        display: block;
+        font-size: 24px;
+        margin: 8px 0 0 auto;
+        padding: 6px 0;
+      }
+    }
+
     /* Slideshow */
     .slideshow-container {
       position: relative;
@@ -228,7 +276,8 @@
 <body>
   <div class="navbar">
     <div class="brand">SeaCanvas</div>
-    <div class="nav-buttons">
+    <button class="menu-toggle" type="button" onclick="toggleMenu()" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
+    <div class="nav-buttons" id="nav-buttons">
       <button onclick="showPage('about')">About</button>
       <button onclick="showPage('gallery')">Gallery</button>
       <button onclick="showPage('contact')">Contact</button>
@@ -238,7 +287,6 @@
   <div id="about" class="content">
     <h2>About</h2>
     <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes. I never tire of their changing colors and abstract design as the sea covers and uncovers vast palettes of clay.</p>
-    <p>Exquisitely beautiful no matter the day or season.</p>
     <img src="minas_basin_high_tide.webp" style="width: 75%; height: auto;" />
     <p>Incoming Tide - Oil on Canvas</p>
   </div>
@@ -347,10 +395,27 @@
       button.style.display = 'none';
     }
 
+    function toggleMenu() {
+      const navButtons = document.getElementById('nav-buttons');
+      const menuToggle = document.querySelector('.menu-toggle');
+      const isOpen = navButtons.classList.toggle('open');
+
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    }
+
+    function closeMenu() {
+      const navButtons = document.getElementById('nav-buttons');
+      const menuToggle = document.querySelector('.menu-toggle');
+
+      navButtons.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+
     function showPage(page) {
       ['about', 'gallery', 'contact'].forEach(p => {
         document.getElementById(p).style.display = p === page ? 'block' : 'none';
       });
+      closeMenu();
     }
 
     function filenameToTitle(filename) {
