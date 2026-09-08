@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SeaCanvas</title>
+  <title>Seacanvas Gallery</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lora:wght@300;400;600&display=swap');
 
@@ -23,6 +23,20 @@
       color: white;
       position: relative;
       z-index: 10;
+    }
+
+    .brand {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      padding: 0;
+    }
+
+    .brand:hover {
+      text-decoration: underline;
     }
 
     .nav-buttons button {
@@ -117,15 +131,30 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
+      align-items: center;
       background: rgba(0, 0, 0, 0.4);
       color: white;
       border: none;
+      border-radius: 50%;
       font-size: 32px;
       cursor: pointer;
-      padding: 10px;
-      border-radius: 50%;
+      display: flex;
+      height: 48px;
+      justify-content: center;
+      padding: 0;
       user-select: none;
+      width: 48px;
       z-index: 2;
+    }
+
+    .slideshow-btn::before {
+      border-color: white;
+      border-style: solid;
+      border-width: 0 5px 5px 0;
+      content: "";
+      display: block;
+      height: 14px;
+      width: 14px;
     }
 
     .slideshow-btn:hover {
@@ -136,8 +165,18 @@
       left: 20px;
     }
 
+    .prev-slide::before {
+      transform: rotate(135deg);
+      margin-left: 5px;
+    }
+
     .next-slide {
       right: 20px;
+    }
+
+    .next-slide::before {
+      transform: rotate(-45deg);
+      margin-right: 5px;
     }
 
     /* Utility Buttons */
@@ -250,6 +289,7 @@
       background: rgba(0, 0, 0, 0.8);
       justify-content: center;
       align-items: center;
+      overflow: hidden;
       z-index: 20;
     }
 
@@ -259,6 +299,12 @@
       max-height: 90%;
       cursor: grab;
       user-select: none;
+      touch-action: none;
+      transform-origin: center center;
+    }
+
+    .modal-content.panning {
+      cursor: grabbing;
     }
 
     .close-btn {
@@ -275,18 +321,20 @@
 </head>
 <body>
   <div class="navbar">
-    <div class="brand">SeaCanvas</div>
+    <button class="brand" type="button" onclick="showPage('about')">Seacanvas Gallery</button>
     <button class="menu-toggle" type="button" onclick="toggleMenu()" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
     <div class="nav-buttons" id="nav-buttons">
-      <button onclick="showPage('about')">About</button>
       <button onclick="showPage('gallery')">Gallery</button>
       <button onclick="showPage('contact')">Contact</button>
     </div>
   </div>
 
   <div id="about" class="content">
-    <h2>About</h2>
-    <p>Here on the Bay of Fundy, the tides are the highest in the world, and their ebb and flow create breathtaking seascapes. I never tire of their changing colors and abstract design as the sea covers and uncovers vast palettes of clay.</p>
+    <h2>About Seacanvas</h2>
+    <p>There’s something magical about the place where sea meets land and sky. Something that draws us back to the water’s edge over and over.</p>
+    <p>In Nova Scotia we have the highest tides in the world, and the movement of Fundy tides over vast mudflats creates an endlessly changing and dramatic seascape. On the Atlantic shore, there are miles of sand and seaweed-covered rocks stretching out to vast ocean, a minimalist colour palette of gold, granite grey on blue.</p>
+    <p>These oil canvases attempt to capture some of the feel of Nova Scotia seascapes, for when we aren’t there in person or when we want to be reminded of what lies around the corner.</p>
+    <p>Beverley Cassidy</p>
     <img src="minas_basin_high_tide.webp" style="width: 75%; height: auto;" />
     <p>Incoming Tide - Oil on Canvas</p>
   </div>
@@ -294,8 +342,8 @@
   <div id="gallery" class="content" style="display: none;">
     <h2>Slideshow</h2>
     <div class="slideshow-container" id="slideshow-container">
-      <button class="slideshow-btn prev-slide" onclick="prevSlide()">&#10094;</button>
-      <button class="slideshow-btn next-slide" onclick="nextSlide()">&#10095;</button>
+      <button class="slideshow-btn prev-slide" onclick="prevSlide()" aria-label="Previous painting"></button>
+      <button class="slideshow-btn next-slide" onclick="nextSlide()" aria-label="Next painting"></button>
       <div class="utility-buttons">
         <button class="utility-btn" id="music-btn" onclick="toggleMusic()">🎵</button>
         <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.5" />
@@ -347,7 +395,6 @@
       'haze_over_scotts_bay.webp',
       'low_tide_sunrise.jpg',
       'wolfville_wharf_in_winter.jpg',
-      'minas_basin_high_tide.jpg',
       'mudflats_wolfville_harbour.jpg',
       'basin_over_mudflats_wolfville_harbour.jpg',
       'three_quarter_tide_wolfville.jpg',
@@ -362,6 +409,7 @@
       // 'avonport_beach.webp',
       // 'on_the_wolfville_dyke_november.jpg',
       // 'mini_minas_morning_minas_maxi_minas.jpg',
+      // 'minas_basin_high_tide.jpg',
     ];
 
     const bgMusic = document.getElementById('bg-music');
@@ -370,14 +418,21 @@
     let musicPlaying = false;
 
     const paintingTitles = {
+      'quiet_day_on_the_shore.webp': 'Hanging Mist over the Shore',
+      'low_tide_evangeline.webp': 'Low Tide',
+      'november_storm_gathering_wolfville.webp': 'November Storm Gathering',
+      'breakdown_on_the_dikes.webp': 'Breakdown on the Dykes',
+      'rainy_morning_kingsport.webp': 'Rainy Marshlands',
+      'haze_over_scotts_bay.webp': 'Haze over Sunset',
+      'wolfville_wharf_in_winter.jpg': 'Ice Flow',
       'mudflats_wolfville_harbour.jpg': 'Mudflats, Wolfville Harbour',
-      'basin_over_mudflats_wolfville_harbour.jpg': 'Basin Over Mudflats, Wolfville Harbour',
-      'three_quarter_tide_wolfville.jpg': '¾ Tide, Wolfville',
-      'wind_on_basin_wolfville.jpg': 'Wind on Basin, Wolfville',
-      'incoming_tide_wolfville.jpg': 'Incoming Tide, Wolfville',
-      'high_tide_wolfville_dyke.jpg': 'High Tide, Wolfville Dyke',
-      'halfway_tide_wolfville_dyke.jpg': 'Halfway Tide, Wolfville Dyke',
-      'outgoing_tide_wolfville_dyke.jpg': 'Outgoing Tide, Wolfville Dyke',
+      'basin_over_mudflats_wolfville_harbour.jpg': 'Basin Over Mudflats',
+      'three_quarter_tide_wolfville.jpg': '¾ Tide',
+      'wind_on_basin_wolfville.jpg': 'Wind on Ocean',
+      'incoming_tide_wolfville.jpg': 'Incoming Tide',
+      'high_tide_wolfville_dyke.jpg': 'High Tide Minimalist',
+      'halfway_tide_wolfville_dyke.jpg': 'Half Tide Minimalist',
+      'outgoing_tide_wolfville_dyke.jpg': 'Outgoing Tide Minimalist',
     };
 
     function revealEmail() {
@@ -505,21 +560,148 @@
       bgMusic.volume = parseFloat(volumeSlider.value);
     });
 
+    const modalState = {
+      scale: 1,
+      translateX: 0,
+      translateY: 0,
+      isPanning: false,
+      startX: 0,
+      startY: 0,
+      startTranslateX: 0,
+      startTranslateY: 0,
+      startDistance: 0,
+      startScale: 1,
+    };
+
+    function getModalImage() {
+      return document.getElementById('modal-image');
+    }
+
+    function clampScale(scale) {
+      return Math.min(Math.max(scale, 1), 5);
+    }
+
+    function applyModalTransform() {
+      const modalImage = getModalImage();
+      modalImage.style.transform = `translate(${modalState.translateX}px, ${modalState.translateY}px) scale(${modalState.scale})`;
+    }
+
+    function resetModalTransform() {
+      Object.assign(modalState, {
+        scale: 1,
+        translateX: 0,
+        translateY: 0,
+        isPanning: false,
+        startX: 0,
+        startY: 0,
+        startTranslateX: 0,
+        startTranslateY: 0,
+        startDistance: 0,
+        startScale: 1,
+      });
+      getModalImage().classList.remove('panning');
+      applyModalTransform();
+    }
+
     function openModal(src) {
       const modal = document.getElementById('image-modal');
-      const modalImage = document.getElementById('modal-image');
+      const modalImage = getModalImage();
       modal.style.display = 'flex';
       modalImage.src = src;
+      resetModalTransform();
     }
 
     function closeModal() {
       document.getElementById('image-modal').style.display = 'none';
+      resetModalTransform();
+    }
+
+    function zoomModalImage(event) {
+      event.preventDefault();
+      const zoomAmount = event.deltaY > 0 ? -0.2 : 0.2;
+      modalState.scale = clampScale(modalState.scale + zoomAmount);
+
+      if (modalState.scale === 1) {
+        modalState.translateX = 0;
+        modalState.translateY = 0;
+      }
+
+      applyModalTransform();
+    }
+
+    function startModalPan(clientX, clientY) {
+      modalState.isPanning = true;
+      modalState.startX = clientX;
+      modalState.startY = clientY;
+      modalState.startTranslateX = modalState.translateX;
+      modalState.startTranslateY = modalState.translateY;
+      getModalImage().classList.add('panning');
+    }
+
+    function panModalImage(clientX, clientY) {
+      if (!modalState.isPanning || modalState.scale <= 1) return;
+
+      modalState.translateX = modalState.startTranslateX + clientX - modalState.startX;
+      modalState.translateY = modalState.startTranslateY + clientY - modalState.startY;
+      applyModalTransform();
+    }
+
+    function endModalPan() {
+      modalState.isPanning = false;
+      getModalImage().classList.remove('panning');
+    }
+
+    function getTouchDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    function startModalTouch(event) {
+      if (event.touches.length === 1) {
+        startModalPan(event.touches[0].clientX, event.touches[0].clientY);
+      } else if (event.touches.length === 2) {
+        endModalPan();
+        modalState.startDistance = getTouchDistance(event.touches);
+        modalState.startScale = modalState.scale;
+      }
+    }
+
+    function moveModalTouch(event) {
+      event.preventDefault();
+
+      if (event.touches.length === 1) {
+        panModalImage(event.touches[0].clientX, event.touches[0].clientY);
+      } else if (event.touches.length === 2) {
+        const nextScale = modalState.startScale * (getTouchDistance(event.touches) / modalState.startDistance);
+        modalState.scale = clampScale(nextScale);
+
+        if (modalState.scale === 1) {
+          modalState.translateX = 0;
+          modalState.translateY = 0;
+        }
+
+        applyModalTransform();
+      }
     }
 
     window.onload = function() {
+      const modalImage = getModalImage();
+
       loadGallery();
       resetSlideTimer();
       bgMusic.volume = parseFloat(volumeSlider.value);
+
+      modalImage.addEventListener('wheel', zoomModalImage, { passive: false });
+      modalImage.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+        startModalPan(event.clientX, event.clientY);
+      });
+      document.addEventListener('mousemove', (event) => panModalImage(event.clientX, event.clientY));
+      document.addEventListener('mouseup', endModalPan);
+      modalImage.addEventListener('touchstart', startModalTouch, { passive: false });
+      modalImage.addEventListener('touchmove', moveModalTouch, { passive: false });
+      modalImage.addEventListener('touchend', endModalPan);
     };
   </script>
 </body>
