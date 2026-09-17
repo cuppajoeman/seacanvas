@@ -73,7 +73,7 @@ def main():
     image_files = get_image_files()
     known_files = set(gallery["active"]) | set(gallery["excluded"])
     new_images = [filename for filename in image_files if filename not in known_files]
-    active = [*gallery["active"], *new_images]
+    active = [*new_images, *gallery["active"]]
     next_block = build_gallery_block(active, gallery["excluded"])
 
     if next_block == gallery["block"]:

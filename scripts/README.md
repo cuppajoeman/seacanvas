@@ -6,4 +6,4 @@ Run this after adding new painting images to the project folder:
 python scripts/update-gallery.py
 ```
 
-The script updates the `filenames` list in `index.html`. It preserves the existing gallery order, keeps intentionally commented-out images excluded, and appends newly discovered image files.
+The script updates the `filenames` list in `index.html`. It puts newly discovered image files at the top of the gallery, preserves the existing gallery order, and keeps intentionally commented-out images excluded.
