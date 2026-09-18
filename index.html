@@ -234,6 +234,13 @@
       text-align: center;
     }
 
+    .statement-body {
+      max-width: 680px;
+      margin: 0 auto;
+      text-align: left;
+      line-height: 1.6;
+    }
+
     .email-reveal {
       background: #88b0c2;
       border: none;
@@ -276,6 +283,29 @@
 
     .gallery-item img:hover {
       transform: scale(1.05);
+    }
+
+    .gallery-item .painting-title {
+      margin: 0.75rem 0 0;
+    }
+
+    .availability-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      margin: 0.35rem 0 0;
+      color: #216e3d;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .availability-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 50%;
+      background-color: #2e9b57;
+      flex: none;
     }
 
     /* Lightbox */
@@ -325,6 +355,7 @@
     <button class="menu-toggle" type="button" onclick="toggleMenu()" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
     <div class="nav-buttons" id="nav-buttons">
       <button onclick="showPage('gallery')">Gallery</button>
+      <button onclick="showPage('artist-statement')">Artist Statement</button>
       <button onclick="showPage('contact')">Contact</button>
     </div>
   </div>
@@ -352,6 +383,17 @@
 
     <h2>Gallery</h2>
     <div class="gallery" id="gallery-container"></div>
+  </div>
+
+  <div id="artist-statement" class="content" style="display: none;">
+    <h2>Artist’s Statement</h2>
+    <div class="statement-body">
+      <p>I grew up by the Bay of Fundy in Nova Scotia’s Annapolis Valley. At low tide, the bay is full of clay patterns, often surreal and embedded in lunar-looking mud slabs. At high tide as the basin fills up, and the sea takes on the undulating curves of the surrounding dykeland. As a kid these transformations were magical and provided a wonderful place to play and explore.</p>
+      <p>As an adult this sea canvas stayed with me long after I moved away from home. I missed it and ultimately the missing drew me back. Today I walk the dykes most days, and have discovered that oils with a palette knife help capture the colors, textures and transforming shapes of the shore.</p>
+      <p>Navigating transitions is also the work of therapy, and as a psychiatrist my day is filled with human narrative, and especially the challenges we face. Storyline like shoreline is mutable and a therapy space can also hold the possibility of transformation. These overlaps between inner experience and outer world are comforting and perhaps this is some of what draws us back so often to the shore- a safe harbour to begin again and discover a new perspective.</p>
+      <p>I hope you’ll enjoy these abstract seascapes. For me a work in progress to capture some of their magic with a palette knife on oil and canvas.</p>
+      <p>Beverley Cassidy</p>
+    </div>
   </div>
 
   <div id="contact" class="content" style="display: none;">
@@ -432,6 +474,15 @@
       'outgoing_tide_wolfville_dyke.jpg': 'Outgoing Tide Minimalist',
     };
 
+    const availablePaintings = new Set([
+      'rose_ocean_at_sunrise.webp',
+      'quiet_center_summerville.webp',
+      'high_tide_wolfville_dyke.jpg',
+      'spring_tide.webp',
+      'pale_blue_afternoon.webp',
+      'winter_waterfall.webp',
+    ]);
+
     function revealEmail() {
       const user = ['cassidy', 'b'].join('');
       const domain = ['ns', 'sympatico', 'ca'].join('.');
@@ -464,7 +515,7 @@
     }
 
     function showPage(page) {
-      ['about', 'gallery', 'contact'].forEach(p => {
+      ['about', 'gallery', 'artist-statement', 'contact'].forEach(p => {
         document.getElementById(p).style.display = p === page ? 'block' : 'none';
       });
       closeMenu();
@@ -494,7 +545,8 @@
         card.className = 'gallery-item';
         card.innerHTML = `
           <img src="${img}" alt="${filenameToTitle(img)}" onclick="openModal(this.src)">
-          <p>${filenameToTitle(img)}</p>
+          <p class="painting-title">${filenameToTitle(img)}</p>
+          ${availablePaintings.has(img) ? '<p class="availability-status"><span class="availability-dot" aria-hidden="true"></span>Available for purchase</p>' : ''}
         `;
         galleryContainer.appendChild(card);
       });
