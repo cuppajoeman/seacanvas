@@ -8,6 +8,6 @@
 4. Double click a painting to rename it. On a touch screen, use **Rename**.
 5. Use **Mark available** or **Mark unavailable** to set its purchase status.
 6. Select **Done Editing & Copy Report**.
-7. Send the copied report to the site maintainer.
+7. Share the copied report.
 
-Edits are a preview in the browser. The report contains the complete order and titles, all renames, and the complete list of paintings available for purchase. The site maintainer applies and publishes it.
+Edits are a preview in the browser. The report contains the complete order and titles, all renames, and the complete list of paintings available for purchase.

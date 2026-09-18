@@ -484,7 +484,7 @@
     <div id="gallery-report" class="gallery-report" hidden>
       <strong>Gallery change report</strong>
       <p id="gallery-report-status" role="status" aria-live="polite"></p>
-      <label for="gallery-report-text">Send the entire report below to the person who updates the site:</label>
+      <label for="gallery-report-text">Complete report:</label>
       <textarea id="gallery-report-text" readonly></textarea>
       <button class="editor-button" type="button" onclick="copyGalleryReport()">Copy report again</button>
     </div>
@@ -867,7 +867,7 @@
 
       try {
         await writeGalleryReportToClipboard(report);
-        status.textContent = 'Copied to the clipboard. Send it to the person who updates the site.';
+        status.textContent = 'Copied to the clipboard.';
       } catch (error) {
         status.textContent = 'Automatic copying was blocked. Select the report and copy it manually.';
       }
