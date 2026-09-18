@@ -289,6 +289,96 @@
       margin: 0.75rem 0 0;
     }
 
+    .gallery-editor,
+    .gallery-report {
+      max-width: 680px;
+      margin: 20px auto;
+      padding: 16px;
+      border: 1px solid #88b0c2;
+      border-radius: 8px;
+      background: white;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    .gallery-editor[hidden],
+    .gallery-report[hidden] {
+      display: none;
+    }
+
+    .gallery-editor p,
+    .gallery-report p {
+      margin: 0.5rem 0 1rem;
+    }
+
+    .editor-button,
+    .editor-card-controls button {
+      border: 0;
+      border-radius: 5px;
+      background: #006060;
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      padding: 8px 12px;
+    }
+
+    .editor-button:hover,
+    .editor-card-controls button:hover {
+      background: #004d4d;
+    }
+
+    .gallery-report textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 220px;
+      margin: 8px 0;
+      padding: 10px;
+      resize: vertical;
+    }
+
+    .gallery.editing .gallery-item {
+      cursor: grab;
+      user-select: none;
+    }
+
+    .gallery.editing .gallery-item.dragging {
+      opacity: 0.45;
+    }
+
+    .gallery.editing .gallery-item.drop-target {
+      outline: 3px solid #006060;
+    }
+
+    .editor-card-controls {
+      display: none;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .gallery.editing .editor-card-controls {
+      display: flex;
+    }
+
+    .editor-card-controls button {
+      font-size: 0.85rem;
+      padding: 5px 8px;
+    }
+
+    .title-editor {
+      box-sizing: border-box;
+      width: 100%;
+      margin-top: 0.75rem;
+      font: inherit;
+      text-align: center;
+    }
+
+    #gallery.editing .slideshow-heading,
+    #gallery.editing .slideshow-container {
+      display: none;
+    }
+
     .availability-status {
       display: flex;
       align-items: center;
@@ -298,6 +388,10 @@
       color: #216e3d;
       font-size: 0.9rem;
       font-weight: 600;
+    }
+
+    .availability-status[hidden] {
+      display: none;
     }
 
     .availability-dot {
@@ -354,7 +448,7 @@
     <button class="brand" type="button" onclick="showPage('about')">Seacanvas Gallery</button>
     <button class="menu-toggle" type="button" onclick="toggleMenu()" aria-label="Open navigation menu" aria-expanded="false">&#9776;</button>
     <div class="nav-buttons" id="nav-buttons">
-      <button onclick="showPage('gallery')">Gallery</button>
+      <button onclick="openGalleryFromNav()">Gallery</button>
       <button onclick="showPage('contact')">Contact</button>
       <button onclick="showPage('artist-statement')">Artist Statement</button>
     </div>
@@ -370,7 +464,7 @@
   </div>
 
   <div id="gallery" class="content" style="display: none;">
-    <h2>Slideshow</h2>
+    <h2 class="slideshow-heading">Slideshow</h2>
     <div class="slideshow-container" id="slideshow-container">
       <button class="slideshow-btn prev-slide" onclick="prevSlide()" aria-label="Previous painting"></button>
       <button class="slideshow-btn next-slide" onclick="nextSlide()" aria-label="Next painting"></button>
@@ -382,6 +476,18 @@
     </div>
 
     <h2>Gallery</h2>
+    <div id="gallery-editor" class="gallery-editor" hidden>
+      <strong>Editing Gallery</strong>
+      <p>Drag paintings into order, double click to rename, and use the availability buttons to mark paintings for purchase. On touch screens, use the Rename and arrow buttons. These changes are a preview until the report is sent and published.</p>
+      <button class="editor-button" type="button" onclick="finishGalleryEditing()">Done Editing &amp; Copy Report</button>
+    </div>
+    <div id="gallery-report" class="gallery-report" hidden>
+      <strong>Gallery change report</strong>
+      <p id="gallery-report-status" role="status" aria-live="polite"></p>
+      <label for="gallery-report-text">Send the entire report below to the person who updates the site:</label>
+      <textarea id="gallery-report-text" readonly></textarea>
+      <button class="editor-button" type="button" onclick="copyGalleryReport()">Copy report again</button>
+    </div>
     <div class="gallery" id="gallery-container"></div>
   </div>
 
@@ -479,6 +585,17 @@
       // Add gallery image filenames here when paintings become available.
     ]);
 
+    const originalGalleryState = filenames.map(filename => ({
+      filename,
+      title: filenameToTitle(filename),
+      available: availablePaintings.has(filename),
+    }));
+    let galleryState = originalGalleryState.map(painting => ({ ...painting }));
+    let galleryEditing = false;
+    let galleryTapTimes = [];
+    let galleryMenuCloseTimer = null;
+    let draggedPainting = null;
+
     function revealEmail() {
       const user = ['cassidy', 'b'].join('');
       const domain = ['ns', 'sympatico', 'ca'].join('.');
@@ -517,6 +634,30 @@
       closeMenu();
     }
 
+    function openGalleryFromNav() {
+      ['about', 'gallery', 'artist-statement', 'contact'].forEach(page => {
+        document.getElementById(page).style.display = page === 'gallery' ? 'block' : 'none';
+      });
+
+      if (galleryEditing) {
+        closeMenu();
+        return;
+      }
+
+      const now = Date.now();
+      galleryTapTimes = galleryTapTimes.filter(time => now - time < 3000);
+      galleryTapTimes.push(now);
+      clearTimeout(galleryMenuCloseTimer);
+
+      if (galleryTapTimes.length >= 7) {
+        galleryTapTimes = [];
+        closeMenu();
+        startGalleryEditing();
+      } else {
+        galleryMenuCloseTimer = setTimeout(closeMenu, 500);
+      }
+    }
+
     function filenameToTitle(filename) {
       if (paintingTitles[filename]) return paintingTitles[filename];
 
@@ -526,26 +667,224 @@
     }
 
     function loadGallery() {
-      const galleryContainer = document.getElementById('gallery-container');
-      const slideshow = document.getElementById('slideshow-container');
+      renderSlideshow();
+      renderGallery();
+    }
 
-      filenames.forEach((img, i) => {
+    function renderSlideshow() {
+      const slideshow = document.getElementById('slideshow-container');
+      slideshow.querySelectorAll('.slide').forEach(slide => slide.remove());
+      currentSlide = 0;
+
+      galleryState.forEach((painting, i) => {
         const slide = document.createElement('img');
-        slide.src = img;
-        slide.alt = filenameToTitle(img);
+        slide.src = painting.filename;
+        slide.alt = painting.title;
         slide.className = 'slide';
         if (i === 0) slide.classList.add('active');
         slideshow.appendChild(slide);
+      });
+    }
 
+    function renderGallery() {
+      const galleryContainer = document.getElementById('gallery-container');
+      galleryContainer.replaceChildren();
+      galleryContainer.classList.toggle('editing', galleryEditing);
+
+      galleryState.forEach((painting, index) => {
         const card = document.createElement('div');
         card.className = 'gallery-item';
+        card.dataset.filename = painting.filename;
+        card.draggable = galleryEditing;
         card.innerHTML = `
-          <img src="${img}" alt="${filenameToTitle(img)}" onclick="openModal(this.src)">
-          <p class="painting-title">${filenameToTitle(img)}</p>
-          ${availablePaintings.has(img) ? '<p class="availability-status"><span class="availability-dot" aria-hidden="true"></span>Available for purchase</p>' : ''}
+          <img src="${painting.filename}" alt="">
+          <p class="painting-title"></p>
+          <p class="availability-status"${painting.available ? '' : ' hidden'}><span class="availability-dot" aria-hidden="true"></span>Available for purchase</p>
+          <div class="editor-card-controls">
+            <button type="button" data-action="rename">Rename</button>
+            <button type="button" data-action="available">${painting.available ? 'Mark unavailable' : 'Mark available'}</button>
+            <button type="button" data-action="left">←</button>
+            <button type="button" data-action="right">→</button>
+          </div>
         `;
+
+        card.querySelector('.painting-title').textContent = painting.title;
+        const image = card.querySelector('img');
+        image.alt = painting.title;
+        card.querySelector('[data-action="left"]').setAttribute('aria-label', `Move ${painting.title} earlier`);
+        card.querySelector('[data-action="right"]').setAttribute('aria-label', `Move ${painting.title} later`);
+        image.addEventListener('click', () => {
+          if (!galleryEditing) openModal(image.src);
+        });
+        card.addEventListener('dblclick', (event) => {
+          if (!galleryEditing || event.target.closest('button, input')) return;
+          event.preventDefault();
+          beginTitleEdit(card);
+        });
+        card.addEventListener('dragstart', handlePaintingDragStart);
+        card.addEventListener('dragover', handlePaintingDragOver);
+        card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
+        card.addEventListener('drop', handlePaintingDrop);
+        card.addEventListener('dragend', clearPaintingDragState);
+        card.querySelector('[data-action="rename"]').addEventListener('click', () => beginTitleEdit(card));
+        card.querySelector('[data-action="available"]').addEventListener('click', () => togglePaintingAvailability(painting.filename));
+        card.querySelector('[data-action="left"]').addEventListener('click', () => movePainting(index, -1));
+        card.querySelector('[data-action="right"]').addEventListener('click', () => movePainting(index, 1));
         galleryContainer.appendChild(card);
       });
+    }
+
+    function startGalleryEditing() {
+      galleryEditing = true;
+      document.getElementById('gallery').classList.add('editing');
+      document.getElementById('gallery-editor').hidden = false;
+      document.getElementById('gallery-report').hidden = true;
+      renderGallery();
+      document.getElementById('gallery-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function beginTitleEdit(card) {
+      if (card.querySelector('.title-editor')) return;
+
+      const painting = galleryState.find(item => item.filename === card.dataset.filename);
+      const titleElement = card.querySelector('.painting-title');
+      const input = document.createElement('input');
+      input.className = 'title-editor';
+      input.type = 'text';
+      input.value = painting.title;
+      input.setAttribute('aria-label', `Rename ${painting.title}`);
+      titleElement.replaceWith(input);
+      card.draggable = false;
+      input.focus();
+      input.select();
+
+      const save = () => {
+        const nextTitle = input.value.trim();
+        if (nextTitle) painting.title = nextTitle;
+        renderGallery();
+      };
+
+      input.addEventListener('blur', save, { once: true });
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Enter') input.blur();
+        if (event.key === 'Escape') {
+          input.value = painting.title;
+          input.blur();
+        }
+      });
+    }
+
+    function togglePaintingAvailability(filename) {
+      const painting = galleryState.find(item => item.filename === filename);
+      painting.available = !painting.available;
+      renderGallery();
+    }
+
+    function movePainting(index, offset) {
+      const nextIndex = index + offset;
+      if (nextIndex < 0 || nextIndex >= galleryState.length) return;
+      const [painting] = galleryState.splice(index, 1);
+      galleryState.splice(nextIndex, 0, painting);
+      renderGallery();
+    }
+
+    function handlePaintingDragStart(event) {
+      if (!galleryEditing) return;
+      draggedPainting = event.currentTarget.dataset.filename;
+      event.currentTarget.classList.add('dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggedPainting);
+    }
+
+    function handlePaintingDragOver(event) {
+      if (!galleryEditing || !draggedPainting) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      event.currentTarget.classList.add('drop-target');
+    }
+
+    function handlePaintingDrop(event) {
+      event.preventDefault();
+      const targetFilename = event.currentTarget.dataset.filename;
+      if (!draggedPainting || draggedPainting === targetFilename) {
+        clearPaintingDragState();
+        return;
+      }
+
+      const fromIndex = galleryState.findIndex(item => item.filename === draggedPainting);
+      const toIndex = galleryState.findIndex(item => item.filename === targetFilename);
+      const [painting] = galleryState.splice(fromIndex, 1);
+      galleryState.splice(toIndex, 0, painting);
+      clearPaintingDragState();
+      renderGallery();
+    }
+
+    function clearPaintingDragState() {
+      draggedPainting = null;
+      document.querySelectorAll('.gallery-item').forEach(card => {
+        card.classList.remove('dragging', 'drop-target');
+      });
+    }
+
+    function buildGalleryReport() {
+      const originalByFilename = new Map(originalGalleryState.map(painting => [painting.filename, painting]));
+      const renamed = galleryState.filter(painting => painting.title !== originalByFilename.get(painting.filename).title);
+      const available = galleryState.filter(painting => painting.available);
+
+      return [
+        'SEACANVAS GALLERY UPDATE',
+        '',
+        'ORDER AND TITLES (complete gallery):',
+        ...galleryState.map((painting, index) => `${index + 1}. ${painting.filename} | ${painting.title}`),
+        '',
+        'RENAMED PAINTINGS:',
+        ...(renamed.length
+          ? renamed.map(painting => `${painting.filename} | ${originalByFilename.get(painting.filename).title} -> ${painting.title}`)
+          : ['None']),
+        '',
+        'AVAILABLE FOR PURCHASE (complete list):',
+        ...(available.length
+          ? available.map(painting => `${painting.filename} | ${painting.title}`)
+          : ['None']),
+      ].join('\n');
+    }
+
+    async function writeGalleryReportToClipboard(report) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(report);
+        return;
+      }
+
+      const reportText = document.getElementById('gallery-report-text');
+      reportText.focus();
+      reportText.select();
+      if (!document.execCommand('copy')) throw new Error('Clipboard copy was blocked.');
+    }
+
+    async function copyGalleryReport() {
+      const report = document.getElementById('gallery-report-text').value;
+      const status = document.getElementById('gallery-report-status');
+
+      try {
+        await writeGalleryReportToClipboard(report);
+        status.textContent = 'Copied to the clipboard. Send it to the person who updates the site.';
+      } catch (error) {
+        status.textContent = 'Automatic copying was blocked. Select the report and copy it manually.';
+      }
+    }
+
+    async function finishGalleryEditing() {
+      galleryEditing = false;
+      document.getElementById('gallery').classList.remove('editing');
+      document.getElementById('gallery-editor').hidden = true;
+      const reportPanel = document.getElementById('gallery-report');
+      const reportText = document.getElementById('gallery-report-text');
+      reportText.value = buildGalleryReport();
+      reportPanel.hidden = false;
+      renderGallery();
+      renderSlideshow();
+      await copyGalleryReport();
+      reportPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     let currentSlide = 0;
